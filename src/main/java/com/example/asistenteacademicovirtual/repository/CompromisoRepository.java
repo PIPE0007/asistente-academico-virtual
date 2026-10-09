@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.List;
 
 @Repository
-public class CompromisoRepository {
+public class CompromisoRepository implements ICompromisoRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -20,6 +20,7 @@ public class CompromisoRepository {
     }
 
     // CREATE
+    @Override
     public Compromiso guardar(Compromiso compromiso) {
         String sql = "INSERT INTO compromiso (titulo, descripcion, fechaLimite, prioridad, estado, idEstudiante, idMateria) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -43,12 +44,14 @@ public class CompromisoRepository {
     }
 
     // READ - todos
+    @Override
     public List<Compromiso> listarTodos() {
         String sql = "SELECT * FROM compromiso";
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapearCompromiso(rs));
     }
 
     // READ - por id
+    @Override
     public Compromiso buscarPorId(Integer id) {
         String sql = "SELECT * FROM compromiso WHERE idCompromiso = ?";
         List<Compromiso> resultado = jdbcTemplate.query(sql, (rs, rowNum) -> mapearCompromiso(rs), id);
@@ -56,6 +59,7 @@ public class CompromisoRepository {
     }
 
     // UPDATE
+    @Override
     public int actualizar(Integer id, Compromiso compromiso) {
         String sql = "UPDATE compromiso SET titulo = ?, descripcion = ?, fechaLimite = ?, prioridad = ?, " +
                 "estado = ?, idEstudiante = ?, idMateria = ? WHERE idCompromiso = ?";
@@ -71,6 +75,7 @@ public class CompromisoRepository {
     }
 
     // DELETE (opcional, lo pide la rúbrica si se puede)
+    @Override
     public int eliminar(Integer id) {
         String sql = "DELETE FROM compromiso WHERE idCompromiso = ?";
         return jdbcTemplate.update(sql, id);
@@ -88,5 +93,16 @@ public class CompromisoRepository {
         c.setIdEstudiante(rs.getInt("idEstudiante"));
         c.setIdMateria(rs.getInt("idMateria"));
         return c;
+    }
+    @Override
+    public List<Compromiso> buscarPorEstado(String estado) {
+        String sql = "SELECT * FROM compromiso WHERE estado = ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapearCompromiso(rs), estado);
+    }
+
+    @Override
+    public int actualizarEstado(Integer id, String estado) {
+        String sql = "UPDATE compromiso SET estado = ? WHERE idCompromiso = ?";
+        return jdbcTemplate.update(sql, estado, id);
     }
 }
