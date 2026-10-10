@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.List;
 
 @Repository
-public class MateriaRepository {
+public class MateriaRepository implements IMateriaRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -19,6 +19,7 @@ public class MateriaRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
     public Materia guardar(Materia materia) {
         String sql = "INSERT INTO materia (nombre) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -33,22 +34,26 @@ public class MateriaRepository {
         return materia;
     }
 
+    @Override
     public List<Materia> listarTodas() {
         String sql = "SELECT * FROM materia";
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapearMateria(rs));
     }
 
+    @Override
     public Materia buscarPorId(Integer id) {
         String sql = "SELECT * FROM materia WHERE idMateria = ?";
         List<Materia> resultado = jdbcTemplate.query(sql, (rs, rowNum) -> mapearMateria(rs), id);
         return resultado.isEmpty() ? null : resultado.get(0);
     }
 
+    @Override
     public int actualizar(Integer id, Materia materia) {
         String sql = "UPDATE materia SET nombre = ? WHERE idMateria = ?";
         return jdbcTemplate.update(sql, materia.getNombre(), id);
     }
 
+    @Override
     public int eliminar(Integer id) {
         String sql = "DELETE FROM materia WHERE idMateria = ?";
         return jdbcTemplate.update(sql, id);
@@ -59,5 +64,18 @@ public class MateriaRepository {
         m.setIdMateria(rs.getInt("idMateria"));
         m.setNombre(rs.getString("nombre"));
         return m;
+    }
+    @Override
+    public boolean existePorNombre(String nombre) {
+        String sql = "SELECT COUNT(*) FROM materia WHERE nombre = ?";
+        Integer cantidad = jdbcTemplate.queryForObject(sql, Integer.class, nombre);
+        return cantidad != null && cantidad > 0;
+    }
+
+    @Override
+    public boolean tieneCompromisos(Integer id) {
+        String sql = "SELECT COUNT(*) FROM compromiso WHERE idMateria = ?";
+        Integer cantidad = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return cantidad != null && cantidad > 0;
     }
 }
